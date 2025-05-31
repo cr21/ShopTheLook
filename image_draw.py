@@ -48,18 +48,18 @@ def draw_scaled_bbox_on_high_res(low_res_path, low_bbox, high_res_path, output_p
     # Save the output image
     high_res_image.save(output_path)
 
-    return output_path
+    return output_path,[x1_high, y1_high, x2_high, y2_high]
 
 
 if __name__ == "__main__":
 
-    high_res_path=r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/MEN/Sweatshirts_Hoodies/id_00000006/01_1_front.jpg"
-    low_res_path=r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img/MEN/Sweatshirts_Hoodies/id_00000006/01_1_front.jpg"
-    low_bbox = [60, 44, 209, 212]
+    high_res_path=r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/WOMEN/Dresses/id_00000002/02_4_full.jpg"
+    low_res_path=r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img//WOMEN/Dresses/id_00000002/02_4_full.jpg"
+    low_bbox = [89, 34, 169, 167]
     #high_res_path =
     output_path = r"/Users/chiragtagadiya/Documents/out.jpg"
 
-    draw_scaled_bbox_on_high_res(low_res_path, low_bbox, high_res_path, output_path)
+    print(draw_scaled_bbox_on_high_res(low_res_path, low_bbox, high_res_path, output_path))
 
     ## OLD CODE
 
