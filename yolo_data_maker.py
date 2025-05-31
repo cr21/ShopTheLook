@@ -2,6 +2,7 @@ import os
 import shutil
 from pathlib import Path
 import re
+import glob
 
 def create_yolo_dataset():
     """
@@ -79,64 +80,86 @@ def create_yolo_dataset():
     
     print(f"Found {len(bounding_boxes)} bounding box entries")
     
+    # Use glob to find all image files at once
+    print("Finding all image files...")
+    image_patterns = [
+        f"{source_data_path}/**/*.jpg",
+        f"{source_data_path}/**/*.jpeg", 
+        f"{source_data_path}/**/*.png"
+    ]
+    
+    all_image_files = []
+    for pattern in image_patterns:
+        all_image_files.extend(glob.glob(pattern, recursive=True))
+    
+    print(f"Found {len(all_image_files)} total image files")
+    
     # Process images and create YOLO format
     processed_count = 0
     skipped_count = 0
     
-    for gender in ['MEN', 'WOMEN']:
-        gender_path = Path(source_data_path) / gender
+    for image_path in all_image_files:
+        image_file = Path(image_path)
         
-        if not gender_path.exists():
-            print(f"Warning: {gender} directory not found")
-            continue
+        # Extract path components using glob results
+        # Path structure: .../GENDER/CATEGORY/ID/IMAGE_NAME
+        path_parts = image_file.parts
+        
+        # Find the indices of gender, category, id
+        try:
+            img_highres_idx = None
+            for i, part in enumerate(path_parts):
+                if part == "img_highres":
+                    img_highres_idx = i
+                    break
             
-        for category_dir in gender_path.iterdir():
-            if not category_dir.is_dir():
+            if img_highres_idx is None:
                 continue
                 
-            category_name = category_dir.name
+            gender = path_parts[img_highres_idx + 1]
+            category_name = path_parts[img_highres_idx + 2] 
+            id_name = path_parts[img_highres_idx + 3]
+            image_name = path_parts[img_highres_idx + 4]
+            
+            # Skip if not proper structure
+            if not id_name.startswith('id_'):
+                continue
+                
+        except IndexError:
+            print(f"Warning: Unexpected path structure for {image_path}")
+            continue
+        
+        # Create the original image path as it appears in bbox file
+        original_image_path = f"img_highres/{gender}/{category_name}/{id_name}/{image_name}"
+        
+        if original_image_path in bounding_boxes:
+            # Get class ID for this category
             class_id = get_class_id(category_name)
             
-            print(f"Processing {gender}/{category_name} (class_id: {class_id})")
+            # Create new filename: id_name + image_name
+            new_image_name = f"{gender}_{category_name}_{id_name}_{image_name}"
+            new_label_name = f"{gender}_{category_name}_{id_name}_{image_file.stem}.txt"
             
-            for id_dir in category_dir.iterdir():
-                if not id_dir.is_dir() or not id_dir.name.startswith('id_'):
-                    continue
-                    
-                id_name = id_dir.name
-                
-                for image_file in id_dir.iterdir():
-                    if not image_file.is_file() or not image_file.suffix.lower() in ['.jpg', '.jpeg', '.png']:
-                        continue
-                    
-                    # Create the original image path as it appears in bbox file
-                    original_image_path = f"img_highres/{gender}/{category_name}/{id_name}/{image_file.name}"
-                    
-                    if original_image_path in bounding_boxes:
-                        # Create new filename: id_name + image_name
-                        new_image_name = f"{id_name}_{image_file.name}"
-                        new_label_name = f"{id_name}_{image_file.stem}.txt"
-                        
-                        # Copy image to YOLO images directory
-                        dst_image_path = images_dir / new_image_name
-                        shutil.copy2(image_file, dst_image_path)
-                        
-                        # Create YOLO format label file
-                        bbox_data = bounding_boxes[original_image_path]
-                        label_content = f"{class_id} {bbox_data['x_center']} {bbox_data['y_center']} {bbox_data['width']} {bbox_data['height']}\n"
-                        
-                        label_file_path = labels_dir / new_label_name
-                        with open(label_file_path, 'w') as f:
-                            f.write(label_content)
-                        
-                        processed_count += 1
-                        
-                        if processed_count % 100 == 0:
-                            print(f"Processed {processed_count} images...")
-                    else:
-                        skipped_count += 1
-                        if skipped_count <= 10:  # Only show first 10 warnings
-                            print(f"Warning: No bounding box found for {original_image_path}")
+            # Copy image to YOLO images directory
+            dst_image_path = images_dir / new_image_name
+            shutil.copy2(image_file, dst_image_path)
+            
+            # Create YOLO format label file
+            bbox_data = bounding_boxes[original_image_path]
+            label_content = f"{class_id} {bbox_data['x_center']} {bbox_data['y_center']} {bbox_data['width']} {bbox_data['height']}\n"
+            
+            label_file_path = labels_dir / new_label_name
+            with open(label_file_path, 'w') as f:
+                f.write(label_content)
+            
+            processed_count += 1
+            
+            if processed_count % 100 == 0:
+                print(f"Processed {processed_count} images...")
+        else:
+            skipped_count += 1
+            if skipped_count <= 10:  # Only show first 10 warnings
+                print(f"Warning: No bounding box found for {original_image_path}")
     
     # Create dataset configuration files
     create_dataset_config(output_yolo_path, processed_count)
@@ -218,21 +241,25 @@ All coordinates are normalized (0-1 range).
 
 def verify_dataset(output_path):
     """
-    Verify the created dataset
+    Verify the created dataset using glob
     """
     images_dir = Path(output_path) / "images"
     labels_dir = Path(output_path) / "labels"
     
-    image_files = list(images_dir.glob("*.jpg")) + list(images_dir.glob("*.jpeg")) + list(images_dir.glob("*.png"))
-    label_files = list(labels_dir.glob("*.txt"))
+    # Use glob to find files
+    image_files = list(glob.glob(str(images_dir / "*.jpg"))) + \
+                  list(glob.glob(str(images_dir / "*.jpeg"))) + \
+                  list(glob.glob(str(images_dir / "*.png")))
+    
+    label_files = list(glob.glob(str(labels_dir / "*.txt")))
     
     print(f"\nDataset Verification:")
     print(f"Images: {len(image_files)}")
     print(f"Labels: {len(label_files)}")
     
     # Check for missing pairs
-    image_stems = {f.stem for f in image_files}
-    label_stems = {f.stem for f in label_files}
+    image_stems = {Path(f).stem for f in image_files}
+    label_stems = {Path(f).stem for f in label_files}
     
     missing_labels = image_stems - label_stems
     missing_images = label_stems - image_stems
