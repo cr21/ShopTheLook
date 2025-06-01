@@ -116,115 +116,112 @@ def convert_bbox_to_yolo(left, top, width, height, img_width, img_height):
 
 
 # post-preprocessing
-def wrap_detection(input_image, output_data):
-  class_ids = []
-  confidences = []
-  boxes = []
+def wrap_detection(input_image, output_data, original_image_dims):
+    class_ids = []
+    confidences = []
+    boxes = []
 
-  # fetching number of rows in output_data
-  rows = output_data.shape[0]
+    # fetching number of rows in output_data
+    rows = output_data.shape[0]
 
-  # fetching width and height of input_image
-  image_width, image_height, _ = input_image.shape
-
-  # x-factor for resizing
-  x_factor = image_width / INPUT_WIDTH
-
-  # y_factor for resizing
-  y_factor =  image_height / INPUT_HEIGHT
-
-  # iterate through detections
-  for r in range(rows):
-
-    # fetch bounding box co-ordinates
-    row = output_data[r]
-
-    # fetch confidence of the detection
-    confidence = row[4]
-
-    # filitering out good detections
-    if confidence >= CONFIDENCE_THRESHOLD:
-      classes_scores = row[5:]
-
-      # get index of max class score
-      _, _, _, max_idx = cv2.minMaxLoc(classes_scores)
-      class_id = max_idx[1]
-
-      if (classes_scores[class_id] > 0.25):
-        # append confidence of new bounding box to the list
-        confidences.append(confidence)
-        class_ids.append(class_id)
-
-        # get coordinated center (x and y) and width and height of the bounding box
-        x, y, w, h = row[0].item(), row[1].item(), row[2].item(), row[3].item()
-
-        # calculate x-coordinate of top-left point of bounding box
-        left = int((x-0.5*w) * x_factor)
-
-        # calculate y-coordinate of top-left point of bounding box
-        top = int((y-0.5*h) * y_factor)
-
-        # calculate width of bounding box
-        width = int(w * x_factor)
-
-        # calculate height of bounding box
-        height = int(h * y_factor)
-
-        # create array of coordinates of the bounding box
-        box = np.array([left, top, width, height])
-        # append new bounding box coordinates to the list
-        boxes.append(box)
-
-  # use non-maximum suppression to avoid multiple bounding boxes for the same object
-  
-  print(f"total boxes {len(boxes)}")
-  indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.25, 0.45)
-  print(f"total boxes indexes {len(indexes)}")
-  # define new lists to store class ID's, confidences and bounding boxes
-  result_class_ids = []
-  result_confidences = []
-  result_boxes = []
-  yolo_lines = []
-
-  # loop through indices
-  for i in indexes:
-    print(f"i {i}")
-    print(f"confidences {confidences[i]}")
-    print(f"class_ids {class_ids[i]}")
-    print(f"boxes {boxes[i]}")
-    print(f"image_width {image_width}, image_height {image_height}")
-    left, top, width, height = boxes[i]
-    # x_1, y_1, x_2, y_2 = left, top, left + width, top + height
-    # converted_bbox = convert_yolo_format(x_1, y_1, x_2, y_2, image_width, image_height)
-    # print(f"converted_bbox {converted_bbox}")
-    # bbox_line = yolo_to_bbox(converted_bbox, image_width, image_height)
-    # print(f"bbox_line {bbox_line}")
+    # fetching width and height of input_image (square/processed image)
+    processed_image_width, processed_image_height, _ = input_image.shape
     
-    # # print("--------------------------------")
-    # x_yolo, y_yolo, w_yolo, h_yolo = converted_bbox
-    # yolo_line = f"{class_ids[i]} {x_yolo:.6f} {y_yolo:.6f} {w_yolo:.6f} {h_yolo:.6f}"
-    # print(f"x_1 {x_1}, y_1 {y_1}, x_2 {x_2}, y_2 {y_2}")
-    print(f"left {left}, top {top}, width {width}, height {height}")
-    # print(f"x_yolo {x_yolo}, y_yolo {y_yolo}, w_yolo {w_yolo}, h_yolo {h_yolo}")
-    
-    x_yolo, y_yolo, w_yolo, h_yolo = convert_bbox_to_yolo(left, top, width, height, image_width, image_height)
-    
-    yolo_line = f"{class_ids[i]} {x_yolo:.6f} {y_yolo:.6f} {w_yolo:.6f} {h_yolo:.6f}"
-    print(f"left {left}, top {top}, width {width}, height {height}")
-    print(f"x_yolo {x_yolo}, y_yolo {y_yolo}, w_yolo {w_yolo}, h_yolo {h_yolo}")
-    yolo_lines.append(yolo_line)
-    # yolo_lines.append(yolo_line)
-    # add detection confidence to the list
-    result_confidences.append(confidences[i])
+    # Original image dimensions
+    original_image_height, original_image_width = original_image_dims
 
-    # add detection class id to the list
-    result_class_ids.append(class_ids[i])
+    # x-factor for resizing
+    x_factor = processed_image_width / INPUT_WIDTH
 
-    # add detection bounding box to the list
+    # y-factor for resizing
+    y_factor = processed_image_height / INPUT_HEIGHT
+
+    # iterate through detections
+    for r in range(rows):
+        # fetch bounding box co-ordinates
+        row = output_data[r]
+
+        # fetch confidence of the detection
+        confidence = row[4]
+
+        # filtering out good detections
+        if confidence >= CONFIDENCE_THRESHOLD:
+            classes_scores = row[5:]
+
+            # get index of max class score
+            _, _, _, max_idx = cv2.minMaxLoc(classes_scores)
+            class_id = max_idx[1]
+
+            if (classes_scores[class_id] > 0.25):
+                # append confidence of new bounding box to the list
+                confidences.append(confidence)
+                class_ids.append(class_id)
+
+                # get coordinated center (x and y) and width and height of the bounding box
+                x, y, w, h = row[0].item(), row[1].item(), row[2].item(), row[3].item()
+
+                # calculate x-coordinate of top-left point of bounding box
+                left = int((x-0.5*w) * x_factor)
+
+                # calculate y-coordinate of top-left point of bounding box
+                top = int((y-0.5*h) * y_factor)
+
+                # calculate width of bounding box
+                width = int(w * x_factor)
+
+                # calculate height of bounding box
+                height = int(h * y_factor)
+
+                # create array of coordinates of the bounding box
+                box = np.array([left, top, width, height])
+                # append new bounding box coordinates to the list
+                boxes.append(box)
+
+    # use non-maximum suppression to avoid multiple bounding boxes for the same object
+    print(f"total boxes {len(boxes)}")
+    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.25, 0.45)
+    print(f"total boxes indexes {len(indexes)}")
     
-    result_boxes.append(boxes[i])
+    # define new lists to store class ID's, confidences and bounding boxes
+    result_class_ids = []
+    result_confidences = []
+    result_boxes = []
+    result_bbox_coords = []
+    yolo_lines = []
 
-  return result_class_ids, result_confidences, result_boxes, yolo_lines
+    # loop through indices
+    for i in indexes:
+        print(f"i {i}")
+        print(f"confidences {confidences[i]}")
+        print(f"class_ids {class_ids[i]}")
+        print(f"boxes {boxes[i]}")
+        print(f"original_image_width {original_image_width}, original_image_height {original_image_height}")
+        
+        left, top, width, height = boxes[i]
+        
+        # Convert to YOLO format using ORIGINAL image dimensions
+        x_yolo, y_yolo, w_yolo, h_yolo = convert_bbox_to_yolo(left, top, width, height, original_image_width, original_image_height)
+        
+        # Create YOLO format line for saving to file
+        yolo_line = f"{class_ids[i]} {x_yolo:.6f} {y_yolo:.6f} {w_yolo:.6f} {h_yolo:.6f}"
+        print(f"YOLO format: {yolo_line}")
+        yolo_lines.append(yolo_line)
+        
+        # Convert to [x1, y1, x2, y2] format for correct visualization
+        x1, y1 = left, top
+        x2, y2 = left + width, top + height
+        bbox_coords = [x1, y1, x2, y2]
+        
+        print(f"left {left}, top {top}, width {width}, height {height}")
+        print(f"bbox_coords [x1, y1, x2, y2]: {bbox_coords}")
+        
+        # add detection data to the lists
+        result_confidences.append(confidences[i])
+        result_class_ids.append(class_ids[i])
+        result_boxes.append(boxes[i])
+        result_bbox_coords.append(bbox_coords)
+
+    return result_class_ids, result_confidences, result_boxes, result_bbox_coords, yolo_lines
 
 
 import cv2
@@ -244,12 +241,15 @@ def display_object_detection(frame):
 
 
 # Main function for the custom object detection
-def yolo_detect(img_path,net):
+def yolo_detect(img_path, net):
     # Read the image
     frame = cv2.imread(img_path)
     # Proceed forward if the image read above is not None
     if frame is not None:
-
+        # Store original image dimensions
+        original_image_height, original_image_width = frame.shape[:2]
+        original_image_dims = (original_image_height, original_image_width)
+        
         # Make a copy of the original image for displaying later
         original_image = frame.copy()
 
@@ -258,44 +258,48 @@ def yolo_detect(img_path,net):
         # Object detection using our custom model
         outs = detect(inputImage, net)
 
-        # Post-process the detections
-        #boxes are in format [left, top, width, height]
-        class_ids, confidences, boxes, yolo_lines = wrap_detection(inputImage, outs[0])
+        # Post-process the detections - pass original dimensions
+        class_ids, confidences, boxes, bbox_coords, yolo_lines = wrap_detection(inputImage, outs[0], original_image_dims)
 
+        # Save YOLO format annotations for labeling/training
         print(f"yolo_lines {yolo_lines}")
         print(img_path.split('/')[-1])
         from pathlib import Path
-        yolo_output_path = Path(img_path).stem +"_yolo.txt"
+        yolo_output_path = Path(img_path).stem + "_yolo.txt"
         with open(yolo_output_path, "w") as f:
             for yolo_line in yolo_lines:
                 f.write(yolo_line + "\n")
+        print(f"Saved YOLO annotations to: {yolo_output_path}")
 
         # Iterate through the detections for drawing annotations on the image
-        for (classid, confidence, box) in zip(class_ids, confidences, boxes):
+        for (classid, confidence, bbox) in zip(class_ids, confidences, bbox_coords):
+            # bbox is now in [x1, y1, x2, y2] format
+            x1, y1, x2, y2 = bbox
+            
             # Choosing the color for drawing annotations
             color = colors[int(classid) % len(colors)]
-            # Drawing the bounding box
-            cv2.rectangle(frame, box, color, 2)
+            
+            # Drawing the bounding box with correct coordinates
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            
             # Preparing the label with class name and confidence score
-            label = f"{class_list[classid]}"
+            label = f"{class_list[classid]} ({confidence:.2f})"
             # Calculating label size
             label_size, base_line = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
             # Drawing a filled rectangle above the bounding box for the label
-            top_left = (box[0], box[1] - label_size[1] - base_line)
-            bottom_right = (box[0] + label_size[0], box[1])
+            top_left = (x1, y1 - label_size[1] - base_line)
+            bottom_right = (x1 + label_size[0], y1)
             cv2.rectangle(frame, top_left, bottom_right, color, cv2.FILLED)
             # Writing the label on top of the bounding box
-            cv2.putText(frame, label, (box[0], box[1] - base_line), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+            cv2.putText(frame, label, (x1, y1 - base_line), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
 
         # Save the annotated image
         annotated_img_path = 'annotated_' + img_path.split('/')[-1]
-        print(annotated_img_path)
+        print(f"Saved annotated image to: {annotated_img_path}")
         
         cv2.imwrite(annotated_img_path, frame)
 
-        #display_object_detection(frame)
-        
-        return annotated_img_path
+        return annotated_img_path, yolo_output_path
     
 
 if __name__ == "__main__":
@@ -316,6 +320,6 @@ if __name__ == "__main__":
     class_list = CATEGORIES
     colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0), (255, 0, 255)]
 
-    img_path = "/Users/chiragtagadiya/Downloads/Annotated_Data/images/val/b00fa599-Screenshot_2024-07-23_at_10.13.51PM.png"
+    img_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/bad59fac-Screenshot_2024-07-27_at_10.55.41AM.png"
     net = build_model("/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/best.onnx")
     yolo_detect(img_path,net)
