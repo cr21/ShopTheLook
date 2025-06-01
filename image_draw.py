@@ -28,6 +28,10 @@ def draw_scaled_bbox_on_high_res(low_res_path, low_bbox, high_res_path, output_p
     low_res_image = Image.open(low_res_path)
     high_res_image = Image.open(high_res_path)
 
+    # Convert to RGB if the image has transparency (RGBA)
+    if high_res_image.mode == 'RGBA':
+        high_res_image = high_res_image.convert('RGB')
+
     # Get dimensions of both images
     low_w, low_h = low_res_image.size
     high_w, high_h = high_res_image.size
@@ -53,11 +57,16 @@ def draw_scaled_bbox_on_high_res(low_res_path, low_bbox, high_res_path, output_p
 
 if __name__ == "__main__":
 
-    high_res_path=r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/WOMEN/Dresses/id_00000002/02_4_full.jpg"
-    low_res_path=r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img//WOMEN/Dresses/id_00000002/02_4_full.jpg"
-    low_bbox = [89, 34, 169, 167]
+    #high_res_path="/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/WOMEN/Cardigans/id_00000070/03_4_full.jpg"
+    #low_res_path="/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img/WOMEN/Cardigans/id_00000070/03_4_full.jpg"
+    low_res_path = "/Users/chiragtagadiya/Downloads/Annotated_Data/images/val/b00fa599-Screenshot_2024-07-23_at_10.13.51PM.png"
+    high_res_path = "/Users/chiragtagadiya/Downloads/Annotated_Data/images/val/b00fa599-Screenshot_2024-07-23_at_10.13.51PM.png"
+    # low_bbox =[285, 95, 427, 128]
+    low_bbox =[96, 642, 275, 1183]
+    # [[285, 95, 427, 128], [179, 201, 580, 619], [213, 631, 552, 1171]]
+    
     #high_res_path =
-    output_path = r"/Users/chiragtagadiya/Documents/out.jpg"
+    output_path = r"/Users/chiragtagadiya/Documents/y_out_1.jpg"
 
     print(draw_scaled_bbox_on_high_res(low_res_path, low_bbox, high_res_path, output_path))
 
@@ -70,6 +79,10 @@ if __name__ == "__main__":
     #image_path ='/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Category and Attribute/img/Sweet_Crochet_Blouse/img_00000070.jpg'
     image = Image.open(image_path)
 
+    # Convert to RGB if the image has transparency (RGBA)
+    if image.mode == 'RGBA':
+        image = image.convert('RGB')
+
     # Define the bounding box using the coordinates (left, top, right, bottom)
     bounding_box = low_bbox
     # Draw the bounding box on the image
@@ -78,4 +91,4 @@ if __name__ == "__main__":
 
     # Display the modified image
     #image.show()
-    image.save(r"/Users/chiragtagadiya/Documents/out3.jpg")
+    image.save(r"/Users/chiragtagadiya/Documents/y_out_1_1.jpg")
