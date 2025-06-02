@@ -241,7 +241,7 @@ def display_object_detection(frame):
 
 
 # Main function for the custom object detection
-def yolo_detect(img_path, net):
+def yolo_detect(img_path, net, no_detections_path):
     # Read the image
     frame = cv2.imread(img_path)
     # Proceed forward if the image read above is not None
@@ -260,15 +260,35 @@ def yolo_detect(img_path, net):
 
         # Post-process the detections - pass original dimensions
         class_ids, confidences, boxes, bbox_coords, yolo_lines = wrap_detection(inputImage, outs[0], original_image_dims)
-
+        if len(yolo_lines) == 0:
+            print(f"No detections found for {img_path.split('/')[-1]}")
+            with open(no_detections_path, 'a') as f:
+                f.write(img_path + "\n")
+                print(img_path)
+        
         # Save YOLO format annotations for labeling/training
         print(f"yolo_lines {yolo_lines}")
-        print(img_path.split('/')[-1])
-        from pathlib import Path
-        yolo_output_path = Path(img_path).stem + "_yolo.txt"
-        with open(yolo_output_path, "w") as f:
+        # print(img_path.split('/')[-1])
+        # from pathlib import Path
+        # print(f"img_path {img_path}, Path(img_path) {Path(img_path)}")
+        # print("parent ",    Path(img_path).parent)
+        yolo_output_path = "consumer_to_shop_path_yolo_inference.txt"
+        print(f"yolo_output_path {yolo_output_path}")
+        with open(yolo_output_path, "a") as f:
             for yolo_line in yolo_lines:
-                f.write(yolo_line + "\n")
+                f.write(img_path + " " + yolo_line + "\n")
+        num_objects_yolo_output_path = f"consumer_to_shop_path_yolo_inference_detected_{len(yolo_lines)}_object.txt"
+        if len(yolo_lines) > 0:
+            with open(num_objects_yolo_output_path, "a") as f:
+                for yolo_line in yolo_lines:
+                    f.write(img_path + " " + yolo_line + "\n")
+
+        if len(yolo_lines) > 0:
+            for yolo_line, class_id in zip(yolo_lines, class_ids):
+                class_name = class_list[class_id]
+                class_id_file_path = f"yolo_inference_for_{class_name}_consumer_to_shop_path.txt"
+                with open(class_id_file_path, "a") as f:
+                    f.write(img_path + " " + yolo_line + "\n")
         print(f"Saved YOLO annotations to: {yolo_output_path}")
 
         # Iterate through the detections for drawing annotations on the image
@@ -320,6 +340,7 @@ if __name__ == "__main__":
     class_list = CATEGORIES
     colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0), (255, 0, 255)]
 
-    img_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/bad59fac-Screenshot_2024-07-27_at_10.55.41AM.png"
+    #img_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/bad59fac-Screenshot_2024-07-27_at_10.55.41AM.png"
+    img_path= '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/DRESSES/Skirt/id_00000251/shop_01.jpg'
     net = build_model("/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/best.onnx")
-    yolo_detect(img_path,net)
+    yolo_detect(img_path,net, no_detections_path='/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/no_detections.txt')

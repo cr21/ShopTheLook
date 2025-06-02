@@ -59,10 +59,10 @@ if __name__ == "__main__":
 
     #high_res_path="/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/WOMEN/Cardigans/id_00000070/03_4_full.jpg"
     #low_res_path="/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img/WOMEN/Cardigans/id_00000070/03_4_full.jpg"
-    low_res_path = "/Users/chiragtagadiya/Downloads/Annotated_Data/images/val/b00fa599-Screenshot_2024-07-23_at_10.13.51PM.png"
-    high_res_path = "/Users/chiragtagadiya/Downloads/Annotated_Data/images/val/b00fa599-Screenshot_2024-07-23_at_10.13.51PM.png"
+    low_res_path =  '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img/DRESSES/Skirt/id_00000251/shop_01.jpg'
+    high_res_path = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/DRESSES/Skirt/id_00000251/shop_01.jpg'
     # low_bbox =[285, 95, 427, 128]
-    low_bbox =[96, 642, 275, 1183]
+    low_bbox =[44, 13, 153, 125]     
     # [[285, 95, 427, 128], [179, 201, 580, 619], [213, 631, 552, 1171]]
     
     #high_res_path =
