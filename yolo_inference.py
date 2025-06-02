@@ -341,6 +341,6 @@ if __name__ == "__main__":
     colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0), (255, 0, 255)]
 
     #img_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/bad59fac-Screenshot_2024-07-27_at_10.55.41AM.png"
-    img_path= '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/DRESSES/Skirt/id_00000251/shop_01.jpg'
+    img_path=  '/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.23.13 AM.png'
     net = build_model("/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/best.onnx")
     yolo_detect(img_path,net, no_detections_path='/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/no_detections.txt')
