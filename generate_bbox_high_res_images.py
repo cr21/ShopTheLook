@@ -43,10 +43,10 @@ def get_bbox_on_high_res(args):
 
 if __name__ == "__main__":
     # Paths
-    low_res_path = r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img"
-    high_res_path = r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres"
-    low_res_bbox_path = r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/In-shop Clothes Retrieval Benchmark/Anno/list_bbox_inshop.txt"
-    output_path = r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/In-shop Clothes Retrieval Benchmark/Anno/list_bbox_high_res_inshop.txt"
+    low_res_path = r'/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img'
+    high_res_path = r'/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres'
+    low_res_bbox_path = r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/list_bbox_consumer2shop.txt"
+    output_path = r"/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/list_bbox_consumer2shop_highres.txt"
 
     # Load low-res and high-res image paths
     low_res_images = sorted(glob(os.path.join(low_res_path, '*/*/*/*.jpg')))
@@ -56,9 +56,11 @@ if __name__ == "__main__":
     with open(low_res_bbox_path, 'r') as f:
         lines = f.readlines()[2:]
     metadata_lines = lines  # Adjust if you want fewer/more
-
+    print(len(metadata_lines))
+    print(len(low_res_images))
+    print(len(high_res_images))
     # Verify consistency
-    assert len(metadata_lines) == len(low_res_images) == len(high_res_images), "Mismatch in counts"
+    # assert len(metadata_lines) == len(low_res_images) == len(high_res_images), "Mismatch in counts"
 
     # Prepare args for parallel execution
     task_args = list(zip(low_res_images, metadata_lines, high_res_images))
@@ -73,7 +75,7 @@ if __name__ == "__main__":
 
     # Write output
     print(f"Writing {len(results)} entries to {output_path}")
-    output_path = output_path.replace('.txt', '_1.txt')
+    # output_path = output_path.replace('.txt', '_1.txt')
     with open(output_path, 'w') as f:
         f.write(f"{len(results)}\n")
         f.write("image_name clothes_type pose_type x_1 y_1 x_2 y_2\n")

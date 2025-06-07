@@ -1,5 +1,0 @@
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/CLOTHING/Coat/id_00026081/shop_01.jpg 4 0.462607 0.197293 0.241453 0.084046
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.16.56 AM.png 4 0.447198 0.039116 0.131466 0.027211
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.17.46 AM.png 4 0.494262 0.110507 0.129508 0.027778
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.22.10 AM.png 4 0.395979 0.143100 0.190559 0.050905
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.23.13 AM.png 4 0.457857 0.161926 0.178571 0.052516

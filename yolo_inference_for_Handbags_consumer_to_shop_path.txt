@@ -1,9 +1,0 @@
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/DRESSES/Suspenders_Skirt/id_00024835/shop_01.jpg 0 0.404915 0.963675 0.147436 0.072650
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/TROUSERS/Summer_Wear/id_00000025/comsumer_16.jpg 0 0.795940 0.131054 0.382479 0.270655
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/TROUSERS/Pants/id_00000056/comsumer_15.jpg 0 0.678419 0.583333 0.207265 0.163462
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/TROUSERS/Pants/id_00000056/comsumer_16.jpg 0 0.643162 0.520032 0.200855 0.142628
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/TROUSERS/Pants/id_00000056/comsumer_15.jpg 0 0.678419 0.583333 0.207265 0.163462
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/TROUSERS/Pants/id_00000150/comsumer_01.jpg 0 0.479701 0.196314 0.113248 0.190705
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.16.56 AM.png 0 0.256466 0.697279 0.168103 0.329932
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.16.56 AM.png 0 0.023707 0.600340 0.047414 0.173469
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.23.13 AM.png 0 0.473571 0.676149 0.401429 0.507659

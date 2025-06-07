@@ -501,3 +501,5 @@ if __name__ == "__main__":
         batch_size=16,      # Larger batch size possible with ONNXRuntime
         num_processes=4   # Number of parallel processes
     )
+
+#scp -r -i "aws_pem_ec2_yolo.pem"   /Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_data/images/  ubuntu@ec2-98-84-31-221.compute-1.amazonaws.com:/home/ubuntu/data

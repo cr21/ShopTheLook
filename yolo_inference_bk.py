@@ -3,110 +3,130 @@ import cv2
 import time
 import sys
 import numpy as np
+from glob import glob
 import os
 from matplotlib import pyplot as plt
+import multiprocessing as mp
+from multiprocessing import Pool, Manager
+import threading
+from tqdm import tqdm
+import psutil
+from collections import defaultdict
+from datetime import datetime
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import queue
 
-# load model using OpenCV
+# Thread-safe file writer with aggressive buffering
+class ThreadSafeFileWriter:
+    def __init__(self, buffer_size=2000):  # Larger buffer
+        self.locks = defaultdict(threading.Lock)
+        self.buffers = defaultdict(list)
+        self.buffer_size = buffer_size
+        
+    def write_to_file(self, filepath, content):
+        with self.locks[filepath]:
+            self.buffers[filepath].append(content)
+            
+            # Flush buffer when it reaches buffer_size
+            if len(self.buffers[filepath]) >= self.buffer_size:
+                self._flush_buffer(filepath)
+    
+    def _flush_buffer(self, filepath):
+        if self.buffers[filepath]:
+            with open(filepath, 'a', buffering=16384) as f:  # Even larger buffer
+                f.writelines(self.buffers[filepath])
+                f.flush()
+            self.buffers[filepath].clear()
+    
+    def flush_all(self):
+        """Flush all buffers - call this at the end"""
+        for filepath in list(self.buffers.keys()):
+            with self.locks[filepath]:
+                self._flush_buffer(filepath)
+
+# System monitoring
+class SystemMonitor:
+    def __init__(self, log_file="system_monitor.log"):
+        self.log_file = log_file
+        self.monitoring = False
+        self.monitor_thread = None
+        self.start_time = time.time()
+        
+    def start_monitoring(self, interval=10):
+        self.monitoring = True
+        self.monitor_thread = threading.Thread(target=self._monitor_loop, args=(interval,), daemon=True)
+        self.monitor_thread.start()
+        
+    def stop_monitoring(self):
+        self.monitoring = False
+        if self.monitor_thread:
+            self.monitor_thread.join(timeout=1)
+            
+    def _monitor_loop(self, interval):
+        with open(self.log_file, 'w') as f:
+            f.write("Time,CPU%,Memory%,Available_GB\n")
+            
+        while self.monitoring:
+            try:
+                elapsed = time.time() - self.start_time
+                cpu_percent = psutil.cpu_percent(interval=1)
+                memory = psutil.virtual_memory()
+                memory_percent = memory.percent
+                available_gb = memory.available / (1024**3)
+                
+                print(f"[{elapsed:.0f}s] CPU: {cpu_percent:.1f}%, Memory: {memory_percent:.1f}%, Available: {available_gb:.2f}GB")
+                
+                with open(self.log_file, 'a') as f:
+                    f.write(f"{elapsed:.0f},{cpu_percent:.1f},{memory_percent:.1f},{available_gb:.2f}\n")
+                
+                time.sleep(interval)
+            except:
+                break
+
+# Global variables for workers
+model = None
+file_writer = None
+
 def build_model(model_path):
-  # load custom YOLOv5
-  model = cv2.dnn.readNet(model_path)
-  # return loaded model
-  return model
+    """Load YOLO model using OpenCV - single image only"""
+    model = cv2.dnn.readNet(model_path)
+    return model
 
-
-# performing object detection
-def detect(image, net):
-  # convert image to blob
-  # mean subtraction and scaling
-  blob = cv2.dnn.blobFromImage(image, 1/255.0,
-                            (INPUT_WIDTH, INPUT_HEIGHT),
-                            swapRB=True, crop=False)
-
-  # set the blob as input to the network
-  net.setInput(blob)
-
-  # get prediction from the model
-  prediction = net.forward()
-
-  return prediction
-
-
-# pre-processing
-def format_yolov5(frame):
-
-  # defining number of rows and columns in image numpy representation
-  row, col, _ = frame.shape
-
-  # finding the maximum between row and column
-  _max = max(col, row)
-
-  # initializing result matrix with zeros
-  result = np.zeros((_max, _max, 3), np.uint8)
-
-  # copying data from frame ndarray to result
-  result[0:row, 0:col] = frame
-
-  return result
-
-def convert_yolo_format(x1, y1, x2, y2, img_w, img_h):
-    x_center = ((x1 + x2) / 2) / img_w
-    y_center = ((y1 + y2) / 2) / img_h
-    width = (x2 - x1) / img_w
-    height = (y2 - y1) / img_h
-    return x_center, y_center, width, height
-
-def yolo_to_bbox(yolo_coords, image_width, image_height):
-    """
-    Convert YOLO format coordinates to bounding box format.
+def detect_single_optimized(image, net):
+    """Optimized single image detection"""
+    # Convert image to blob for single image (batch size = 1)
+    blob = cv2.dnn.blobFromImage(image, 1/255.0,
+                                (INPUT_WIDTH, INPUT_HEIGHT),
+                                swapRB=True, crop=False)
     
-    Parameters:
-    - yolo_coords: YOLO format [x_center, y_center, width, height] (normalized 0-1)
-    - image_width: Width of the image in pixels
-    - image_height: Height of the image in pixels
+    # Set input and get prediction
+    net.setInput(blob)
+    prediction = net.forward()
     
-    Returns:
-    - bbox: Bounding box in format [x_1, y_1, x_2, y_2] where:
-            x_1, y_1 = upper left corner coordinates
-            x_2, y_2 = lower right corner coordinates
-    """
-    x_center, y_center, width, height = yolo_coords
+    return prediction
+
+def format_yolov5_fast(frame):
+    """Optimized preprocessing"""
+    h, w = frame.shape[:2]
     
-    # Convert normalized coordinates to pixel coordinates
-    x_center_pixel = x_center * image_width
-    y_center_pixel = y_center * image_height
-    width_pixel = width * image_width
-    height_pixel = height * image_height
+    # Only resize if needed
+    if h == w and h == INPUT_WIDTH:
+        return frame
     
-    # Calculate corner coordinates
-    x_1 = int(x_center_pixel - width_pixel / 2)
-    y_1 = int(y_center_pixel - height_pixel / 2)
-    x_2 = int(x_center_pixel + width_pixel / 2)
-    y_2 = int(y_center_pixel + height_pixel / 2)
+    # Find the maximum dimension
+    _max = max(w, h)
     
-    # Ensure coordinates are within image bounds
-    x_1 = max(0, x_1)
-    y_1 = max(0, y_1)
-    x_2 = min(image_width, x_2)
-    y_2 = min(image_height, y_2)
+    # Create result array - more efficient
+    result = np.zeros((_max, _max, 3), dtype=np.uint8)
+    result[0:h, 0:w] = frame
     
-    return [x_1, y_1, x_2, y_2]
+    return result
 
 def convert_bbox_to_yolo(left, top, width, height, img_width, img_height):
-    """
-    Convert bounding box format [left, top, width, height] to YOLO format.
-    
-    Parameters:
-    - left, top, width, height: Bounding box coordinates
-    - img_width, img_height: Image dimensions
-    
-    Returns:
-    - YOLO format [x_center_norm, y_center_norm, width_norm, height_norm]
-    """
-    # Calculate center coordinates
+    """Convert bounding box format to YOLO format"""
     x_center = left + width / 2
     y_center = top + height / 2
     
-    # Normalize coordinates (0-1 range)
     x_center_norm = x_center / img_width
     y_center_norm = y_center / img_height
     width_norm = width / img_width
@@ -114,233 +134,247 @@ def convert_bbox_to_yolo(left, top, width, height, img_width, img_height):
     
     return x_center_norm, y_center_norm, width_norm, height_norm
 
-
-# post-preprocessing
-def wrap_detection(input_image, output_data, original_image_dims):
-    class_ids = []
-    confidences = []
-    boxes = []
-
-    # fetching number of rows in output_data
+def wrap_detection_optimized(input_image, output_data, original_image_dims):
+    """Optimized detection processing"""
     rows = output_data.shape[0]
-
-    # fetching width and height of input_image (square/processed image)
-    processed_image_width, processed_image_height, _ = input_image.shape
     
-    # Original image dimensions
+    if rows == 0:
+        return [], [], [], [], []
+    
+    # Pre-allocate arrays for better performance
+    confidences = []
+    class_ids = []
+    boxes = []
+    
+    # Get dimensions
+    processed_image_height, processed_image_width = input_image.shape[:2]
     original_image_height, original_image_width = original_image_dims
-
-    # x-factor for resizing
+    
+    # Calculate factors once
     x_factor = processed_image_width / INPUT_WIDTH
-
-    # y-factor for resizing
     y_factor = processed_image_height / INPUT_HEIGHT
-
-    # iterate through detections
+    
+    # Vectorized processing where possible
     for r in range(rows):
-        # fetch bounding box co-ordinates
         row = output_data[r]
-
-        # fetch confidence of the detection
         confidence = row[4]
-
-        # filtering out good detections
+        
         if confidence >= CONFIDENCE_THRESHOLD:
             classes_scores = row[5:]
-
-            # get index of max class score
-            _, _, _, max_idx = cv2.minMaxLoc(classes_scores)
-            class_id = max_idx[1]
-
-            if (classes_scores[class_id] > 0.25):
-                # append confidence of new bounding box to the list
+            max_score = np.max(classes_scores)
+            class_id = np.argmax(classes_scores)
+            
+            if max_score > 0.25:
                 confidences.append(confidence)
                 class_ids.append(class_id)
-
-                # get coordinated center (x and y) and width and height of the bounding box
-                x, y, w, h = row[0].item(), row[1].item(), row[2].item(), row[3].item()
-
-                # calculate x-coordinate of top-left point of bounding box
-                left = int((x-0.5*w) * x_factor)
-
-                # calculate y-coordinate of top-left point of bounding box
-                top = int((y-0.5*h) * y_factor)
-
-                # calculate width of bounding box
+                
+                # Bounding box calculations
+                x, y, w, h = row[0], row[1], row[2], row[3]
+                left = int((x - 0.5 * w) * x_factor)
+                top = int((y - 0.5 * h) * y_factor)
                 width = int(w * x_factor)
-
-                # calculate height of bounding box
                 height = int(h * y_factor)
-
-                # create array of coordinates of the bounding box
-                box = np.array([left, top, width, height])
-                # append new bounding box coordinates to the list
-                boxes.append(box)
-
-    # use non-maximum suppression to avoid multiple bounding boxes for the same object
-    print(f"total boxes {len(boxes)}")
-    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.25, 0.45)
-    print(f"total boxes indexes {len(indexes)}")
+                
+                boxes.append([left, top, width, height])
     
-    # define new lists to store class ID's, confidences and bounding boxes
+    if not boxes:
+        return [], [], [], [], []
+    
+    # NMS
+    indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.25, 0.45)
+    
+    if len(indexes) == 0:
+        return [], [], [], [], []
+    
+    # Process final results
     result_class_ids = []
     result_confidences = []
     result_boxes = []
     result_bbox_coords = []
     yolo_lines = []
-
-    # loop through indices
-    for i in indexes:
-        print(f"i {i}")
-        print(f"confidences {confidences[i]}")
-        print(f"class_ids {class_ids[i]}")
-        print(f"boxes {boxes[i]}")
-        print(f"original_image_width {original_image_width}, original_image_height {original_image_height}")
-        
+    
+    for i in indexes.flatten():
         left, top, width, height = boxes[i]
         
-        # Convert to YOLO format using ORIGINAL image dimensions
-        x_yolo, y_yolo, w_yolo, h_yolo = convert_bbox_to_yolo(left, top, width, height, original_image_width, original_image_height)
+        # YOLO format conversion
+        x_yolo, y_yolo, w_yolo, h_yolo = convert_bbox_to_yolo(
+            left, top, width, height, original_image_width, original_image_height
+        )
         
-        # Create YOLO format line for saving to file
         yolo_line = f"{class_ids[i]} {x_yolo:.6f} {y_yolo:.6f} {w_yolo:.6f} {h_yolo:.6f}"
-        print(f"YOLO format: {yolo_line}")
         yolo_lines.append(yolo_line)
         
-        # Convert to [x1, y1, x2, y2] format for correct visualization
-        x1, y1 = left, top
-        x2, y2 = left + width, top + height
-        bbox_coords = [x1, y1, x2, y2]
+        # Bounding box coordinates
+        bbox_coords = [left, top, left + width, top + height]
         
-        print(f"left {left}, top {top}, width {width}, height {height}")
-        print(f"bbox_coords [x1, y1, x2, y2]: {bbox_coords}")
-        
-        # add detection data to the lists
         result_confidences.append(confidences[i])
         result_class_ids.append(class_ids[i])
         result_boxes.append(boxes[i])
         result_bbox_coords.append(bbox_coords)
-
+    
     return result_class_ids, result_confidences, result_boxes, result_bbox_coords, yolo_lines
 
+def init_worker(model_path, categories, input_width, input_height, confidence_threshold):
+    """Initialize each worker process"""
+    global model, file_writer, CATEGORIES, class_list, INPUT_WIDTH, INPUT_HEIGHT, CONFIDENCE_THRESHOLD
+    
+    model = build_model(model_path)
+    file_writer = ThreadSafeFileWriter(buffer_size=1000)  # Larger buffer
+    
+    CATEGORIES = categories
+    class_list = CATEGORIES
+    INPUT_WIDTH = input_width
+    INPUT_HEIGHT = input_height
+    CONFIDENCE_THRESHOLD = confidence_threshold
 
-import cv2
-from matplotlib import pyplot as plt
-
-
-def display_object_detection(frame):
-    # Display the input and detected images
-    plt.figure(figsize=(8, 8))
-
-    # Show the detected image
-    plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    plt.title('YOLOv5 Detection')
-    plt.axis('off')
-
-    plt.show()
-
-
-# Main function for the custom object detection
-def yolo_detect(img_path, net, no_detections_path):
-    # Read the image
-    frame = cv2.imread(img_path)
-    # Proceed forward if the image read above is not None
-    if frame is not None:
-        # Store original image dimensions
+def process_single_image_ultra_fast(img_path_and_no_det_path):
+    """Ultra-optimized single image processing"""
+    img_path, no_detections_path = img_path_and_no_det_path
+    global model, file_writer, class_list
+    
+    try:
+        # Read image
+        frame = cv2.imread(img_path)
+        if frame is None:
+            file_writer.write_to_file(no_detections_path, f"{img_path} - READ_ERROR\n")
+            return 0
+        
+        # Store original dimensions
         original_image_height, original_image_width = frame.shape[:2]
         original_image_dims = (original_image_height, original_image_width)
         
-        # Make a copy of the original image for displaying later
-        original_image = frame.copy()
-
-        # Pre-process the input image
-        inputImage = format_yolov5(frame)
-        # Object detection using our custom model
-        outs = detect(inputImage, net)
-
-        # Post-process the detections - pass original dimensions
-        class_ids, confidences, boxes, bbox_coords, yolo_lines = wrap_detection(inputImage, outs[0], original_image_dims)
+        # Optimized preprocessing
+        inputImage = format_yolov5_fast(frame)
+        
+        # Single image detection
+        outs = detect_single_optimized(inputImage, model)
+        
+        # Optimized post-processing
+        class_ids, confidences, boxes, bbox_coords, yolo_lines = wrap_detection_optimized(
+            inputImage, outs[0], original_image_dims
+        )
+        
         if len(yolo_lines) == 0:
-            print(f"No detections found for {img_path.split('/')[-1]}")
-            with open(no_detections_path, 'a') as f:
-                f.write(img_path + "\n")
-                print(img_path)
+            file_writer.write_to_file(no_detections_path, f"{img_path}\n")
+            return 0
         
-        # Save YOLO format annotations for labeling/training
-        print(f"yolo_lines {yolo_lines}")
-        # print(img_path.split('/')[-1])
-        # from pathlib import Path
-        # print(f"img_path {img_path}, Path(img_path) {Path(img_path)}")
-        # print("parent ",    Path(img_path).parent)
+        # Batch file writing for efficiency
         yolo_output_path = "consumer_to_shop_path_yolo_inference.txt"
-        print(f"yolo_output_path {yolo_output_path}")
-        with open(yolo_output_path, "a") as f:
-            for yolo_line in yolo_lines:
-                f.write(img_path + " " + yolo_line + "\n")
-        num_objects_yolo_output_path = f"consumer_to_shop_path_yolo_inference_detected_{len(yolo_lines)}_object.txt"
-        if len(yolo_lines) > 0:
-            with open(num_objects_yolo_output_path, "a") as f:
-                for yolo_line in yolo_lines:
-                    f.write(img_path + " " + yolo_line + "\n")
-
-        if len(yolo_lines) > 0:
-            for yolo_line, class_id in zip(yolo_lines, class_ids):
-                class_name = class_list[class_id]
-                class_id_file_path = f"yolo_inference_for_{class_name}_consumer_to_shop_path.txt"
-                with open(class_id_file_path, "a") as f:
-                    f.write(img_path + " " + yolo_line + "\n")
-        print(f"Saved YOLO annotations to: {yolo_output_path}")
-
-        # Iterate through the detections for drawing annotations on the image
-        for (classid, confidence, bbox) in zip(class_ids, confidences, bbox_coords):
-            # bbox is now in [x1, y1, x2, y2] format
-            x1, y1, x2, y2 = bbox
-            
-            # Choosing the color for drawing annotations
-            color = colors[int(classid) % len(colors)]
-            
-            # Drawing the bounding box with correct coordinates
-            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-            
-            # Preparing the label with class name and confidence score
-            label = f"{class_list[classid]} ({confidence:.2f})"
-            # Calculating label size
-            label_size, base_line = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-            # Drawing a filled rectangle above the bounding box for the label
-            top_left = (x1, y1 - label_size[1] - base_line)
-            bottom_right = (x1 + label_size[0], y1)
-            cv2.rectangle(frame, top_left, bottom_right, color, cv2.FILLED)
-            # Writing the label on top of the bounding box
-            cv2.putText(frame, label, (x1, y1 - base_line), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
-
-        # Save the annotated image
-        annotated_img_path = 'annotated_' + img_path.split('/')[-1]
-        print(f"Saved annotated image to: {annotated_img_path}")
+        num_objects_file = f"consumer_to_shop_path_yolo_inference_detected_{len(yolo_lines)}_object.txt"
         
-        cv2.imwrite(annotated_img_path, frame)
+        # Write all lines for this image at once
+        for yolo_line in yolo_lines:
+            file_writer.write_to_file(yolo_output_path, f"{img_path} {yolo_line}\n")
+            file_writer.write_to_file(num_objects_file, f"{img_path} {yolo_line}\n")
+        
+        # Write by class
+        for yolo_line, class_id in zip(yolo_lines, class_ids):
+            class_name = class_list[class_id]
+            class_file = f"yolo_inference_for_{class_name}_consumer_to_shop_path.txt"
+            file_writer.write_to_file(class_file, f"{img_path} {yolo_line}\n")
+        
+        return len(yolo_lines)
+        
+    except Exception as e:
+        file_writer.write_to_file(no_detections_path, f"{img_path} - ERROR: {str(e)}\n")
+        return 0
 
-        return annotated_img_path, yolo_output_path
+def run_ultra_fast_parallel_inference(img_path_list, model_path, num_processes=None):
+    """Run ultra-fast parallel YOLO inference"""
     
+    if num_processes is None:
+        # Use more processes for single image processing
+        num_processes = min(mp.cpu_count(), 12)
+    
+    print(f"Processing {len(img_path_list)} images using {num_processes} processes...")
+    
+    # Start monitoring
+    monitor = SystemMonitor("yolo_ultra_fast_monitor.log")
+    monitor.start_monitoring(interval=15)
+    
+    # Configuration
+    categories = ['Handbags', 'Pants', 'Shirts', 'Shoes', 'Sunglasses']
+    no_detections_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/no_detections.txt'
+    
+    # Prepare arguments
+    img_args = [(img_path, no_detections_path) for img_path in img_path_list]
+    
+    start_time = time.time()
+    total_detections = 0
+    
+    try:
+        # Use ProcessPoolExecutor with more workers
+        with ProcessPoolExecutor(max_workers=num_processes, 
+                                 initializer=init_worker,
+                                 initargs=(model_path, categories, 640, 640, 0.5)) as executor:
+            
+            # Submit all tasks
+            futures = [executor.submit(process_single_image_ultra_fast, args) for args in img_args]
+            
+            # Process results with progress bar
+            completed = 0
+            with tqdm(total=len(img_args), desc="Processing images", unit="img") as pbar:
+                for future in as_completed(futures):
+                    try:
+                        detections = future.result()
+                        total_detections += detections
+                        completed += 1
+                        
+                        # Update progress more frequently
+                        if completed % 100 == 0:
+                            elapsed = time.time() - start_time
+                            rate = completed / elapsed
+                            eta = (len(img_args) - completed) / rate if rate > 0 else 0
+                            pbar.set_postfix({
+                                'rate': f'{rate:.1f} img/s',
+                                'detections': total_detections,
+                                'ETA': f'{eta/3600:.1f}h'
+                            })
+                        
+                        pbar.update(1)
+                        
+                    except Exception as e:
+                        print(f"Error processing image: {e}")
+                        pbar.update(1)
+    
+    except KeyboardInterrupt:
+        print("\nProcessing interrupted!")
+    
+    finally:
+        monitor.stop_monitoring()
+        
+        end_time = time.time()
+        total_time = end_time - start_time
+        
+        print(f"\n{'='*60}")
+        print(f"ULTRA-FAST PROCESSING COMPLETE")
+        print(f"{'='*60}")
+        print(f"Total images: {len(img_path_list)}")
+        print(f"Processing time: {total_time:.2f} seconds ({total_time/3600:.2f} hours)")
+        print(f"Average speed: {len(img_path_list)/total_time:.2f} images/second")
+        print(f"Total detections: {total_detections}")
+        print(f"Monitor log: yolo_ultra_fast_monitor.log")
 
 if __name__ == "__main__":
-
-    # width of an image
+    # Configuration
     INPUT_WIDTH = 640
-
-    # height of an image
     INPUT_HEIGHT = 640
-
-    # confidence threshold for object detection
     CONFIDENCE_THRESHOLD = 0.5
-
-    # making an array of all categories
-
     CATEGORIES = ['Handbags', 'Pants', 'Shirts', 'Shoes', 'Sunglasses']
-    # load classes
     class_list = CATEGORIES
-    colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0), (255, 0, 255)]
-
-    #img_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/bad59fac-Screenshot_2024-07-27_at_10.55.41AM.png"
-    img_path=  '/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.23.13 AM.png'
-    net = build_model("/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/best.onnx")
-    yolo_detect(img_path,net, no_detections_path='/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/no_detections.txt')
+    
+    img_path_dir = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/*/*/*/*.jpg'
+    img_path_list = glob(img_path_dir)
+    model_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/best.onnx"
+    
+    print(f"Found {len(img_path_list)} images to process")
+    
+    # For testing (remove this line for full processing)
+    img_path_list = img_path_list[:200]  # Test with 1k images first
+    
+    # Run ultra-fast parallel inference
+    run_ultra_fast_parallel_inference(
+        img_path_list=img_path_list,
+        model_path=model_path,
+        num_processes=10  # Increase for more parallelism
+    )

@@ -47,7 +47,9 @@ def draw_scaled_bbox_on_high_res(low_res_path, low_bbox, high_res_path, output_p
 
     # Draw bounding box on the high-resolution image
     draw = ImageDraw.Draw(high_res_image)
-    draw.rectangle([x1_high, y1_high, x2_high, y2_high], outline="red", width=2)
+    draw.rectangle([x1_high, y1_high, x2_high, y2_high], outline="blue", width=2)
+    # draw.rectangle([0, 50, 331, 624], outline="red", width=2)
+    # draw.text((x1_high, y1_high), "Hello", fill="red")
 
     # Save the output image
     high_res_image.save(output_path)
@@ -59,12 +61,18 @@ if __name__ == "__main__":
 
     #high_res_path="/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/WOMEN/Cardigans/id_00000070/03_4_full.jpg"
     #low_res_path="/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img/WOMEN/Cardigans/id_00000070/03_4_full.jpg"
-    low_res_path = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img/CLOTHING/Blouse/id_00018420/comsumer_01.jpg'
-    high_res_path = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/CLOTHING/Blouse/id_00018420/comsumer_01.jpg'
+    low_res_path =  '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img/WOMEN/Dresses/id_00000035/04_2_side.jpg'
+
+
+    high_res_path =  '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/WOMEN/Dresses/id_00000035/id_00000035_04_2_side.jpg'
+
     # low_bbox =[285, 95, 427, 128]
-    low_bbox =[ 86 ,1 ,152 ,161 ]              
-    # [[285, 95, 427, 128], [179, 201, 580, 619], [213, 631, 552, 1171]]
-    
+    low_bbox =[100 ,39 ,156 ,256]
+    #[1], [235, 251, 612, 904]           
+    ## [175, 525, 356, 702], [109, 388, 220, 489], [224, 203, 280, 239], [198, 258, 399, 507]
+    # /home/ubuntu/data/images/WOMEN_Blouses_Shirts_id_00002532_04_4_full.jpg 1 0.442667 0.653043 0.285333 0.406903
+    # /home/ubuntu/data/images/WOMEN_Blouses_Shirts_id_00002532_04_4_full.jpg 3 0.461333 0.925976 0.202667 0.129882
+
     #high_res_path =
     output_path = r"/Users/chiragtagadiya/Documents/y_out_1.jpg"
 

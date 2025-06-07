@@ -4,7 +4,7 @@ from pathlib import Path
 
 # Class names - update this to match your model's classes
 CLASSES = ['Handbags', 'Pants', 'Shirts', 'Shoes', 'Sunglasses']
-
+# {'Handbags': 0, 'Pants': 1, 'Shirts': 2, 'Shoes': 3, 'Sunglasses': 4}
 # Colors for each class
 COLORS = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0), (255, 0, 255)]
 
@@ -196,15 +196,19 @@ if __name__ == "__main__":
     # Example usage
     
     # Single image annotation
-    yolo_annotation_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/bad59fac-Screenshot_2024-07-27_at_10.55.41AM.txt"
-    image_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/bad59fac-Screenshot_2024-07-27_at_10.55.41AM.png"
-    output_directory = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/annotated_out"
-    
-    try:
-        output_path = annotate_yolo_on_image(yolo_annotation_path, image_path, output_directory)
-        print(f"Successfully created annotated image: {output_path}")
-    except Exception as e:
-        print(f"Error: {e}")
+    yolo_dir_annotation_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_in_shop_test/labels"
+    image_dir_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_in_shop_test/images"
+    output_directory = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_in_shop_test/annotated_images"
+    from glob import glob
+    yolo_annotations = sorted(glob("/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_in_shop_test/labels/*.txt"))
+    images = sorted(glob("/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_in_shop_test/images/*.jpg"))
+    for idx, (yolo_annotation, image) in enumerate(zip(yolo_annotations, images)):
+        if idx%100 == 0:
+            print(f"Processed {idx} images")
+        try:
+            output_path = annotate_yolo_on_image(yolo_annotation, image, output_directory)
+        except Exception as e:
+            print(f"Error: {e}")
     
     # # Example for multiple images
     # annotation_dir = "/path/to/annotations"

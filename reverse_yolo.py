@@ -90,8 +90,8 @@ if __name__ == "__main__":
     
     # Example 1: Single YOLO coordinate conversion
     # yolo_coords = [0.5, 0.5, 0.4, 0.3]  # Center at (0.5, 0.5), width=0.4, height=0.3
-    image_width = 654
-    image_height = 1302
+    image_width = 750
+    image_height = 1101
     
     # bbox = yolo_to_bbox(yolo_coords, image_width, image_height)
     # print(f"YOLO coordinates: {yolo_coords}")
@@ -99,12 +99,7 @@ if __name__ == "__main__":
     
     # Example 2: Multiple YOLO coordinates conversion
     yolo_coords_list = [
-        [0.284562, 0.701229, 0.274194, 0.414747],
-        [0.292627, 0.334485, 0.302611, 0.347926],
-        [0.271505, 0.084101, 0.103687, 0.037634],
-        # [0.5452183026805071, 0.08607198748043818, 0.21808732107220286, 0.025039123630672913],
-        # [0.5810469339995119, 0.31533646322378717, 0.6137600321603424, 0.32081377151799684],
-        # [0.5857202337367734, 0.6924882629107981, 0.5171785042569382, 0.4147104851330203]
+        [0.500000, 0.576172, 0.218750, 0.847656]
     ]
 
 
@@ -118,3 +113,6 @@ if __name__ == "__main__":
     yolo_converted = bbox_to_yolo(bbox_coords, image_width, image_height)
     print(f"\nBounding box coordinates: {bbox_coords}")
     print(f"Converted to YOLO format: {yolo_converted}")
+
+
+# /Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/DRESSES/Dress/id_00016642/id_00016642_comsumer_06.jpg

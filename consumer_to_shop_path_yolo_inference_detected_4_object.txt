@@ -1,8 +1,0 @@
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/CLOTHING/Blouse/id_00007421/comsumer_01.jpg 1 0.550214 0.683413 0.292735 0.400319
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/CLOTHING/Blouse/id_00007421/comsumer_01.jpg 2 0.550214 0.236842 0.382479 0.451356
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/CLOTHING/Blouse/id_00007421/comsumer_01.jpg 1 0.193376 0.419458 0.425214 0.787879
-/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/CLOTHING/Blouse/id_00007421/comsumer_01.jpg 3 0.461538 0.868421 0.222222 0.062201
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.17.46 AM.png 2 0.542623 0.320652 0.409836 0.303140
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.17.46 AM.png 1 0.513934 0.654589 0.263934 0.376812
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.17.46 AM.png 3 0.500820 0.882246 0.168852 0.071256
-/Users/chiragtagadiya/Desktop/Screenshot 2025-06-02 at 2.17.46 AM.png 4 0.494262 0.110507 0.129508 0.027778
