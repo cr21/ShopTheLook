@@ -1,5 +1,28 @@
 # ShopTheLook
-Implementation of Shop The look  adding Agentic RAG 
+
+What is Object Detection?
+Object Detection is the task of identifying and locating objects in an image or video. It produces:
+
+Class label (e.g., car, dog, person)
+
+Bounding box (location of object in the image)
+
+Real-world applications include:
+
+Autonomous vehicles
+
+Security surveillance
+
+Medical imaging
+
+Retail analytics
+
+Industrial inspection
+
+
+
+----------
+##Implementation of Shop The look  adding Agentic RAG 
 
 ### Inspiration
 
