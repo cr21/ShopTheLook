@@ -1,4 +1,4 @@
-# Shop The Look  with Agentic RAG 
+# Shop The Look: Get outfit inspiration with Agentic RAG 
 
 ## Milestone 1: Custom Object Detection with YOLO on Fashion Accessories
 
@@ -74,9 +74,9 @@ In this step, we focus on annotating the full-shot image data that has been scra
 <br>
 <center>
   <div style="display: flex; justify-content: center; gap: 10px;">
-    <img src="utils/images/5.png" alt="da 1" style="height: 600px; width: 33%; object-fit: cover;">
-    <img src="utils/images/6.png" alt="da 2" style="height: 600px; width: 33%; object-fit: cover;">
-    <img src="utils/images/7.png" alt="da 3" style="height: 600px; width: 33%; object-fit: cover;">
+    <img src="utils/images/5.png" alt="da 1" style="height: 600px; width: 30%; object-fit: cover;">
+    <img src="utils/images/6.png" alt="da 2" style="height: 600px; width: 30%; object-fit: cover;">
+    <img src="utils/images/7.png" alt="da 3" style="height: 600px; width: 30%; object-fit: cover;">
   </div>
 </center>
 <br>
@@ -91,7 +91,7 @@ For object detection pipeline, we are interested in detecting specific clothing 
 - **Bottomwear**
 - **Footwear**
 - **Handbag**
-- **Sunglasses**
+- **EyeWear**
 
 To train a YOLOv5 model, your data must be in the **YOLO annotation format**:
 
@@ -162,9 +162,92 @@ To adapt this dataset for object detection, we manually added bounding box annot
 - 👖 **Bottomwear** 
 - 👟 **Footwear** *(annotated with Label Studio)*
 - 👜 **Handbags** *(annotated with Label Studio)*
-- 🕶️ **Sunglasses** *(planned annotations)*
+- 🕶️ **EyeWear** *(planned annotations)*
 
 All annotations follow the **YOLO format** and are split into training and validation sets accordingly.
+
+
+## Training: Object Detection 
+
+### Available YOLOv5 Model Variants
+
+YOLOv5 provides five pre-defined model architectures optimized for different trade-offs between speed and accuracy:
+
+| Model        | Size | Speed (FPS) | Accuracy (mAP) |
+|--------------|------|-------------|----------------|
+| YOLOv5-nano  | 🟢 Smallest | Fastest     | 🟡 Lower     |
+| YOLOv5-small | 🔸 Small    | Fast        | 🟡 Moderate  |
+| YOLOv5-medium| ⚫ Medium   | Balanced    | ✅ Good      |
+| YOLOv5-large | 🔵 Large    | Balanced    | ✅ Better    |
+| YOLOv5-xlarge| 🔴 X-Large  | Slower      | 🔥 Highest   |
+
+
+### Training the YOLOv5-Large Model
+
+For this project, we selected the **YOLOv5-large** model. It offers a strong balance between inference speed and detection accuracy, making it ideal for identifying fine-grained fashion items like **Handbags, Topwear, Bottomwear, Footwear** and **Sunglasses**.
+
+We followed the official [YOLOv5 training documentation](https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data) to set up and run the training process using **PyTorch**.
+
+
+### Customizing YOLOv5 for Fashion Object Detection
+
+Although YOLOv5 is pre-trained on 80 COCO classes, we adapt it for **custom object detection** by training on annotated clothing/accessory items.
+
+**Custom Classes for Detection:**
+- 👕 **Topwear** 
+- 👖 **Bottomwear** 
+- 👟 **Footwear** 
+- 👜 **Handbags** 
+- 🕶️ **EyeWear**
+
+To support this, we configured a custom `.yaml` file to specify dataset paths and class labels.
+
+### YAML Configuration
+
+The `data.yaml` file tells YOLOv5 where to find your data and what classes to detect.
+
+```yaml
+# Number of classes
+nc: 5
+
+# Names of the classes
+names: ['Handbags', 'BottomWear', 'TopWear', 'FootWear', 'EyeWear']
+
+# Paths to the datasets
+path: /workspace/Yolo_final                # dataset root dir
+train: /workspace/Yolo_final/images/train  # train images (relative to 'path') 450 images
+val: /workspace/Yolo_final/images/val      # val images (relative to 'path') 50 images
+test:                                        # test images (optional)
+
+# Classes
+names:
+  0: Handbags
+  1: BottomWear
+  2: TopWear
+  3: FootWear
+  4: EyeWear
+```
+
+This configuration ensures that YOLOv5 understands the custom dataset labels.
+
+Once the dataset and config are ready, launch training with the following command:
+
+```python
+python train.py --img 640 --batch 64 --epochs 40 --weights yolov5l.pt --data /workspace/Yolo_final/pinterest.yaml
+```
+
+with following parameters:
+
+- `img`: *Image size*
+
+- `batch`: *Batch size (adjust per GPU memory)*
+
+- `epochs`: *Number of training epochs*
+
+- `data`: *Path to your data.yaml file*
+
+- `weights`: *Pretrained weights to fine-tune from*
+
 
 
 ### Download the Original Dataset
