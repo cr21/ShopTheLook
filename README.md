@@ -271,7 +271,11 @@ YOLOv5 generates several evaluation plots post-training. These help assess how c
 - How model precision varies with the confidence threshold.
 - Higher curves mean fewer false positives at different thresholds.
 
-![Precision-Confidence](utils/results/P_curve.png)
+<center>
+  <img src="utils/results/P_curve.png"
+       alt="PR Curve"
+       style="max-width: 500px; height: 500px; object-fit: contain; margin-bottom: 5px; display: block;">
+</center>
 
 
 #### Recall vs Confidence Curve
@@ -279,7 +283,12 @@ YOLOv5 generates several evaluation plots post-training. These help assess how c
 - Model's ability to detect all relevant objects across varying confidence levels.
 - High recall at low confidence suggests the model rarely misses objects.
 
-![Recall-Confidence](utils/results/R_curve.png)
+
+<center>
+  <img src="utils/results/R_curve.png"
+       alt="PR Curve"
+       style="max-width: 500px; height: 500px; object-fit: contain; margin-bottom: 5px; display: block;">
+</center>
 
 
 #### Precision–Recall (PR) Curve
@@ -287,7 +296,12 @@ YOLOv5 generates several evaluation plots post-training. These help assess how c
 - Trade-off between precision and recall for each class.
 - Area under the PR curve (AP) indicates model effectiveness. AUC closer to 1 is ideal.
 
-![Precision-Recall Curve](utils/results/PR_curve.png)
+<center>
+  <img src="utils/results/PR_curve.png"
+       alt="PR Curve"
+       style="max-width: 500px; height: 500px; object-fit: contain; margin-bottom: 5px; display: block;">
+</center>
+
 
 
 #### F1 Score vs Confidence Curve
@@ -295,7 +309,11 @@ YOLOv5 generates several evaluation plots post-training. These help assess how c
 - Harmonic mean of precision and recall at different confidence thresholds.
 - Helps determine the best threshold for optimal balance between precision and recall.
 
-![F1-Confidence](utils/results/F1_curve.png)
+<center>
+  <img src="utils/results/F1_curve.png"
+       alt="PR Curve"
+       style="max-width: 500px; height: 500px; object-fit: contain; margin-bottom: 5px; display: block;">
+</center>
 
 ### Summary
 
