@@ -1,72 +1,180 @@
-# ShopTheLook
+# Shop The Look  with Agentic RAG 
 
-What is Object Detection?
-Object Detection is the task of identifying and locating objects in an image or video. It produces:
+## Milestone 1: Custom Object Detection with YOLO on Fashion Accessories
 
-Class label (e.g., car, dog, person)
+This section describes an  object detection pipeline using the YOLOv5 architecture. It includes steps like data annotation, model training, evaluation, and inference. YOLOv5 is an object detection model that balances accuracy and speed, making it ideal for real-world applications.
 
-Bounding box (location of object in the image)
+## What is Object Detection?
 
-Real-world applications include:
+Object detection is a fundamental task in computer vision where the goal is to not only classify objects in an image but also to **locate them** with bounding boxes. Unlike image classification which gives a single label for an entire image, object detection can identify **multiple objects** and return both:
 
-Autonomous vehicles
+- The class of each object (e.g., "car", "person")
+- The location of the object in the form of bounding box coordinates
 
-Security surveillance
+This technology helps in real-world applications such as:
 
-Medical imaging
+- **Autonomous vehicles** (detecting pedestrians, traffic lights)
+- **Surveillance systems** (detecting intrusions or abnormal behavior)
+- **Retail analytics** (monitoring customer behavior)
+- **Healthcare diagnostics** (detecting tumors or anomalies in scans)
 
-Retail analytics
+<center>
+  <img src="https://neurohive.io/wp-content/uploads/2018/11/object-recognition-e1541510005103.png"
+       alt="AI Brain Image"
+       style="height: 300px; width: 500px; object-fit: contain; margin-bottom: 5px; display: block;">
+</center>
 
-Industrial inspection
+## How Object Detection Works
+
+At its core, object detection is a combination of **localization and classification**. Here's how the process generally works:
+
+1. **Input Image**: The raw image is passed to the model.
+2. **Feature Extraction**: A convolutional neural network (CNN) is used to extract spatial features.
+3. **Region Proposal / Grid Mapping**: The model either proposes regions of interest (in two-stage detectors) or uses fixed grids (in single-stage detectors like YOLO).
+4. **Bounding Box Regression**: For each region/grid, the model predicts coordinates for bounding boxes.
+5. **Object Classification**: Each box is classified to determine which object it contains.
+6. **Post-processing**: Non-Max Suppression (NMS) removes duplicate boxes and retains the most confident detections.
+
+The output is a set of bounding boxes, class labels, and confidence scores.
+
+
+## Common Object Detection Algorithms
+
+Over time, object detection algorithms have evolved from traditional methods to deep learning-based models. They are broadly categorized as:
+
+### Two-Stage Detectors
+These models first generate region proposals and then classify them.
+- **R-CNN (2014)**: Extracts features for each region using CNNs.
+- **Fast R-CNN**: Improves speed by using a single CNN feature map for the whole image.
+- **Faster R-CNN**: Introduces Region Proposal Networks (RPN) for end-to-end learning.
+
+### Single-Stage Detectors
+These models predict object locations and class probabilities in one step.
+- **YOLO (You Only Look Once)**: Processes the image in one forward pass.
+- **SSD (Single Shot MultiBox Detector)**: Predicts multiple boxes at different scales.
+- **RetinaNet**: Uses focal loss to address class imbalance in dense detection.
+
+
+## Why Choose YOLOv5?
+
+YOLOv5 is one of the most advanced and widely adopted object detection frameworks today. Some key reasons to use YOLOv5 include:
+
+- **Speed**: Achieves real-time detection even on edge devices.
+- **Accuracy**: Competes with state-of-the-art models like Faster R-CNN and EfficientDet.
+- **Flexibility**: Supports transfer learning and custom dataset training with ease.
+- **Pre-trained Models**: Comes with ready-to-use weights trained on COCO.
+- **Active Development**: Backed by Ultralytics and an active open-source community.
+- **PyTorch-Based**: Easy to integrate with other deep learning projects.
+
+
+## Data Annotation
+
+In this step, we focus on annotating the full-shot image data that has been scraped, preparing it for training a custom YOLOv5 model. Proper data annotation is crucial as it involves labeling the images with the exact locations and categories of the objects we want our model to detect.
+
+<br>
+<center>
+  <div style="display: flex; justify-content: center; gap: 10px;">
+    <img src="utils/images/5.png" alt="da 1" style="height: 600px; width: 33%; object-fit: cover;">
+    <img src="utils/images/6.png" alt="da 2" style="height: 600px; width: 33%; object-fit: cover;">
+    <img src="utils/images/7.png" alt="da 3" style="height: 600px; width: 33%; object-fit: cover;">
+  </div>
+</center>
+<br>
+
+### Annotating Images in YOLOv5 Supported Format
+
+The annotation process involves drawing bounding boxes around the target objects within the images and assigning the appropriate labels to each bounding box. 
+
+For object detection pipeline, we are interested in detecting specific clothing and accessories, and the labels we are considering are:
+
+- **Topwear**
+- **Bottomwear**
+- **Footwear**
+- **Handbag**
+- **Sunglasses**
+
+To train a YOLOv5 model, your data must be in the **YOLO annotation format**:
+
+- Each image has a corresponding `.txt` label file with the same filename.
+- Each line in the label file represents one object using the format:
+  
+```
+<class_id> <x_center> <y_center> <width> <height>
+```
+
+<center>
+<img src='utils/images/8.png' height=350>
+<br>
+</center>
+
+- All values are normalized (i.e., between 0 and 1) relative to image size.
 
 
 
-----------
-##Implementation of Shop The look  adding Agentic RAG 
+### Using Label Studio
 
-### Inspiration
+For data annotation, we used [Label Studio](https://labelstud.io/guide/quick_start). It offers a user-friendly interface for drawing bounding boxes around objects and assigning labels to them, making it an efficient choice for annotating large datasets.
+
+Here’s a **demo video** showing the data annotation process using Label Studio, which provides a visual guide on how to draw bounding boxes and assign labels effectively.
 
 
-### Milestone 1: Training Object detection modal to extract Fashion Part
+<video width="640" height="360" controls>
+  <source src="utils/video/data_annotation.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-### Dataset Information
+
+[Click to watch the demo video](utils/video/data_annotation.mp4)
+
+
+
+
+## Dataset 
 
 [![In-Shop Dataset | Papers With Code](./static/a60e38d9-01df-40ec-b806-3b0ac98e82c9.png)](https://paperswithcode.com/dataset/in-shop)
 
----
 
-## 📦 DeepFashion: In-shop Clothes Retrieval Dataset
+## DeepFashion: In-shop Clothes Retrieval Dataset (Customized for Object Detection)
 
-The **DeepFashion: In-shop Clothes Retrieval** dataset is a benchmark designed to evaluate the performance of in-shop clothes retrieval systems. It is a comprehensive subset of the larger DeepFashion database, focusing on images captured in controlled, shop-like environments.([mmlab.ie.cuhk.edu.hk][1], [mmlab.ie.cuhk.edu.hk][2])
+The **DeepFashion: In-shop Clothes Retrieval** dataset is a large-scale benchmark originally developed to support fine-grained image retrieval of fashion items. It focuses on images taken in controlled shop-like environments and features multiple views of the same clothing items, making it well-suited for training deep learning models.
 
-### 🔍 Key Features
+We have **repurposed** this dataset for an **object detection task** by adding bounding box annotations around key fashion components such as **Topwear**, **Bottomwear**, **Shoes**, **Handbags**, and **Sunglasses**.
 
-* **7,982** unique clothing items
-* **52,712** in-shop clothing images
-* Approximately **200,000** cross-pose/scale image pairs
-* Rich annotations per image, including:
 
-  * Bounding boxes
-  * Clothing categories
-  * Pose types
+### Original Dataset Features
 
-### 📁 Dataset Contents
+- **7,982** unique clothing items
+- **52,712** high-quality clothing images
+- ~**200,000** image pairs with cross-pose and scale variations
+- Annotations include:
+  - Bounding boxes (partial)
+  - Clothing identity and category
+  - Pose types and landmarks
+  - Dense pose & parsing masks
+  - Attribute labels
 
-* **In-shop Clothes Images**: High-quality images of clothing items.
-* **High-Resolution Images**: Enhanced versions for detailed analysis.
-* **Identity & Pair Annotations**: Mappings of clothing items and their corresponding pairs.
-* **Bounding Box & Landmark Annotations**: Spatial information for object detection tasks.
-* **Attribute Annotations**: Detailed descriptors of clothing attributes.
-* **Parsing Mask Annotations**: Segmentation masks for fine-grained analysis.
-* **Dense Pose Annotations**: Detailed pose information for each image.
-* **Train/Validation/Test Partitions**: Predefined splits for model training and evaluation.([mmlab.ie.cuhk.edu.hk][2], [mmlab.ie.cuhk.edu.hk][1])
 
-### 🔗 Access the Dataset
+### Custom Annotations
 
-You can download the dataset and access more details from the official project page:
-👉 [DeepFashion: In-shop Clothes Retrieval](https://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/InShopRetrieval.html)
+To adapt this dataset for object detection, we manually added bounding box annotations for the following fashion parts:
 
-### 📄 Citation
+- 👕 **Topwear** 
+- 👖 **Bottomwear** 
+- 👟 **Footwear** *(annotated with Label Studio)*
+- 👜 **Handbags** *(annotated with Label Studio)*
+- 🕶️ **Sunglasses** *(planned annotations)*
+
+All annotations follow the **YOLO format** and are split into training and validation sets accordingly.
+
+
+### Download the Original Dataset
+
+You can access the official dataset and learn more about it here:  
+
+[DeepFashion: In-shop Clothes Retrieval](https://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/InShopRetrieval.html)
+
+
+### Citation
 
 If you utilize this dataset in your research or projects, please cite the following paper:
 
@@ -80,44 +188,4 @@ If you utilize this dataset in your research or projects, please cite the follow
 }
 ```
 
-Thanks for the clarification! Since you're using the **DeepFashion In-shop Clothes Retrieval** dataset primarily to train an **object detection model** — specifically for detecting fashion parts like **Topwear, Bottomwear, Shoes, Handbags, and Sunglasses** — and you’re extending it by adding **custom bounding box annotations**, your README should clearly reflect both:
 
-* The original dataset's purpose and content
-* Your modifications (e.g., added classes and annotations)
-
-Here's the updated Markdown section tailored for your use case:
-
----
-
-## 📦 DeepFashion In-shop Clothes Retrieval Dataset (Customized for Object Detection)
-
-The **DeepFashion: In-shop Clothes Retrieval** dataset is originally designed for fine-grained clothing retrieval tasks. It contains high-resolution images of fashion items in controlled shop settings, with rich metadata such as category labels, clothing identities, and bounding boxes for some categories.
-
-### 🔧 Our Custom Use Case
-
-We adapt this dataset for training **fashion object detection models** aimed at localizing and classifying key fashion parts:
-
-* **Topwear**
-* **Bottomwear**
-* **Shoes** *(custom annotated)*
-* **Handbags** *(custom annotated)*
-* **Sunglasses** *(custom annotated - in plan)* 
-
-Since the original dataset lacks bounding box annotations for some of our target classes (e.g., shoes, handbags, sunglasses), we will add **custom bounding box annotations** to extend its applicability for object detection.
-
-### 📁 Dataset Components (Customized)
-
-* 🖼️ In-shop clothing images
-* 🔲 Original bounding boxes for clothing items (from DeepFashion)
-* ✍️ Custom bounding boxes for:
-
-  * Shoes
-  * Handbags
-  * Sunglasses (in plan)
-* 📌 Fashion part category labels: `Topwear`, `Bottomwear`, `Shoes`, `Handbags`, `Sunglasses`
-* 🧪 Train/val/test splits for object detection tasks
-
----
-
-<!-- [1]: https://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/InShopRetrieval.html?utm_source=chatgpt.com "DeepFashion: In-shop Clothes Retrieval"
-[2]: https://mmlab.ie.cuhk.edu.hk/projects/DeepFashion.html?utm_source=chatgpt.com "Large-scale Fashion (DeepFashion) Database" -->
