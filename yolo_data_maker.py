@@ -9,31 +9,37 @@ def create_yolo_dataset():
     Create YOLO dataset from the existing directory structure and bounding box file.
     """
     
-    # Define paths
-    source_data_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_format/img_highres"
-    bbox_file_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_format/list_highres_bbox_yolo_format.txt"
-    output_yolo_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_data"
+    # Define paths In shop Clothes Retrieval Benchmark
+    # source_data_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres"
+    # bbox_file_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/list_bbox_inshop_yolo.txt"
+    # output_yolo_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/yolo_format"
+    source_data_path = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres'
+    bbox_file_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/list_bbox_consumer2shop_high_resyolo.txt"
+    output_yolo_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/yolo_format"
     
     # Define clothing categories and their class mapping
     topwear_categories = {
         'Jackets_Vests', 'Shirts_Polos', 'Sweaters', 'Sweatshirts_Hoodies', 
         'Tees_Tanks', 'Blouses_Shirts', 'Cardigans', 'Dresses', 
-        'Graphic_Tees', 'Jackets_Coats', 'Rompers_Jumpsuits', 'Suiting'
+        'Graphic_Tees', 'Jackets_Coats', 'Rompers_Jumpsuits', 'Suiting','Blouse',
+        'Coat','Polo_Shirt','T_Shirt','Tank_Top','Summer_Wear','Chiffon','Lace_Shirt','Dress','Lace_Dress',
+        'Sleeveless_Dress',
     }
     
     bottomwear_categories = {
-        'Denim', 'Pants', 'Leggings', 'Shorts', 'Skirts', 'Suiting'
+        'Denim', 'Pants', 'Leggings', 'Shorts', 'Skirts', 'Suiting','Jeans','Joggers','Skirt',
+        'Suspenders_Skirt'
     }
     
     # Class mapping: BottomWear = 0, TopWear = 1
     def get_class_id(category):
         if category in topwear_categories:
-            return 1  # TopWear
+            return 2  # TopWear
         elif category in bottomwear_categories:
-            return 0  # BottomWear
+            return 1  # BottomWear
         else:
             print(f"Warning: Unknown category '{category}', defaulting to TopWear")
-            return 1
+            return -1
     
     # Create output directories
     images_dir = Path(output_yolo_path) / "images"
@@ -276,7 +282,7 @@ if __name__ == "__main__":
     print("Starting YOLO dataset creation...")
     create_yolo_dataset()
     
-    output_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_data"
+    output_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/yolo_format"
     verify_dataset(output_path)
     
     print("\nDataset creation completed!")

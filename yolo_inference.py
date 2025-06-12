@@ -343,10 +343,11 @@ def process_image_batch_onnxruntime(batch_data):
                 file_writer.write_to_file(no_detections_path, f"{img_path}\n")
             else:
                 total_detections += len(yolo_lines)
+                print(f"Total detections: {total_detections}")
                 
                 # Write results efficiently
-                yolo_output_path = "consumer_to_shop_path_yolo_inference.txt"
-                num_objects_file = f"consumer_to_shop_path_yolo_inference_detected_{len(yolo_lines)}_object.txt"
+                yolo_output_path = "inference_results/consumer_to_shop_path_yolo_inference.txt"
+                num_objects_file = f"inference_results/consumer_to_shop_path_yolo_inference_detected_{len(yolo_lines)}_object.txt"
                 
                 for yolo_line in yolo_lines:
                     file_writer.write_to_file(yolo_output_path, f"{img_path} {yolo_line}\n")
@@ -394,8 +395,8 @@ def run_onnxruntime_batch_inference(img_path_list, model_path, batch_size=16, nu
     monitor.start_monitoring(interval=15)
     
     # Configuration
-    categories = ['Handbags', 'Pants', 'Shirts', 'Shoes', 'Sunglasses']
-    no_detections_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/no_detections.txt'
+    categories = ['Handbags', 'BottomWear', 'TopWear', 'FootWear', 'EyeWear']
+    no_detections_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/inference_results/no_detections.txt'
     
     # Create batches
     # batches = create_batches(img_path_list, batch_size)
@@ -480,7 +481,7 @@ if __name__ == "__main__":
     INPUT_WIDTH = 640
     INPUT_HEIGHT = 640
     CONFIDENCE_THRESHOLD = 0.5
-    CATEGORIES = ['Handbags', 'Pants', 'Shirts', 'Shoes', 'Sunglasses']
+    CATEGORIES = ['Handbags', 'BottomWear', 'TopWear', 'FootWear', 'EyeWear']
     class_list = CATEGORIES
     
     img_path_dir = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img/img_highres/*/*/*/*.jpg'
@@ -488,7 +489,7 @@ if __name__ == "__main__":
     img_path_list = glob(img_path_dir)
     model_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/best.onnx"
     model_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/best_multi_batch.onnx"
-    
+    model_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/models/best_yolom_25epoch.onnx"
     print(f"Found {len(img_path_list)} images to process")
     
     # For testing (remove this line for full processing)
@@ -499,7 +500,7 @@ if __name__ == "__main__":
         img_path_list=img_path_list,
         model_path=model_path,
         batch_size=16,      # Larger batch size possible with ONNXRuntime
-        num_processes=4   # Number of parallel processes
+        num_processes=1   # Number of parallel processes
     )
 
 #scp -r -i "aws_pem_ec2_yolo.pem"   /Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_data/images/  ubuntu@ec2-98-84-31-221.compute-1.amazonaws.com:/home/ubuntu/data

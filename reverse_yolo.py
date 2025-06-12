@@ -90,8 +90,8 @@ if __name__ == "__main__":
     
     # Example 1: Single YOLO coordinate conversion
     # yolo_coords = [0.5, 0.5, 0.4, 0.3]  # Center at (0.5, 0.5), width=0.4, height=0.3
-    image_width = 750
-    image_height = 1101
+    image_width = 562
+    image_height = 1274
     
     # bbox = yolo_to_bbox(yolo_coords, image_width, image_height)
     # print(f"YOLO coordinates: {yolo_coords}")
@@ -99,7 +99,11 @@ if __name__ == "__main__":
     
     # Example 2: Multiple YOLO coordinates conversion
     yolo_coords_list = [
-        [0.500000, 0.576172, 0.218750, 0.847656]
+           [0.410142, 0.319466, 0.702847, 0.365777],
+           [0.527580, 0.092229, 0.208185, 0.055730],
+           [0.497331, 0.694270, 0.460854, 0.394819],
+           [0.518683, 0.963108, 0.275801, 0.067504]
+
     ]
 
 

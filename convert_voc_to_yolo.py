@@ -82,17 +82,17 @@ def convert_bboxes_parallel(bboxes: List[List[float]],
 # Example usage
 if __name__ == "__main__":
     # consumer to shop
-    # low_res_base_path = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img'
-    # high_res_base_path = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img'
-    # source_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/list_bbox_consumer2shop.txt'
-    # output_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/list_bbox_consumer2shop_yolo.txt'
+    low_res_base_path = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img'
+    high_res_base_path = '/Users/chiragtagadiya/Documents/dataset_shop_the_look/DeepFashion/Consumer-to-shop Clothes Retrieval Benchmark/Consumer-to-shop Clothes Retrieval Benchmark/img'
+    source_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/list_bbox_consumer2shop.txt'
+    output_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/Consumer-to-shop Clothes Retrieval Benchmark/list_bbox_consumer2shop_high_resyolo.txt'
 
     # in shop retrieval
     
-    low_res_base_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark'
-    high_res_base_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark'
-    source_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/list_bbox_inshop.txt'
-    output_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/list_bbox_inshop_yolo.txt'
+    # low_res_base_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark'
+    # high_res_base_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark'
+    # source_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/list_bbox_inshop.txt'
+    # output_path = '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/list_bbox_inshop_high_res_yolo.txt'
 
     # Statistics for debugging
     total_processed = 0

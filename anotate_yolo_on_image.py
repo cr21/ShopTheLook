@@ -194,6 +194,8 @@ def annotate_multiple_images(annotation_dir, image_dir, output_directory):
 
 if __name__ == "__main__":
     # Example usage
+
+    # read yolo_annotations_file_andPrepare_for_yolo_inference
     
     # Single image annotation
     yolo_dir_annotation_path = "/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/yolo_in_shop_test/labels"

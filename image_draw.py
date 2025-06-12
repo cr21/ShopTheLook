@@ -61,13 +61,15 @@ if __name__ == "__main__":
 
     #high_res_path="/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/WOMEN/Cardigans/id_00000070/03_4_full.jpg"
     #low_res_path="/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img/WOMEN/Cardigans/id_00000070/03_4_full.jpg"
-    low_res_path =  '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img/WOMEN/Dresses/id_00000035/04_2_side.jpg'
+    low_res_path =  '/Users/chiragtagadiya/Downloads/Annotated_Data/images/train/a2e9c90f-Screenshot_2024-07-27_at_8.36.09PM.png'
 
 
-    high_res_path =  '/Users/chiragtagadiya/Downloads/MyProjects/ShopTheLook/data/In-shop Clothes Retrieval Benchmark/img_highres/WOMEN/Dresses/id_00000035/id_00000035_04_2_side.jpg'
+    high_res_path =  '/Users/chiragtagadiya/Downloads/Annotated_Data/images/train/a2e9c90f-Screenshot_2024-07-27_at_8.36.09PM.png'
 
     # low_bbox =[285, 95, 427, 128]
-    low_bbox =[100 ,39 ,156 ,256]
+    # [[32, 173, 427, 639], [237, 81, 354, 152], [150, 633, 408, 1135], [213, 1183, 368, 1269]]
+
+    low_bbox = [213, 1183, 368, 1269]
     #[1], [235, 251, 612, 904]           
     ## [175, 525, 356, 702], [109, 388, 220, 489], [224, 203, 280, 239], [198, 258, 399, 507]
     # /home/ubuntu/data/images/WOMEN_Blouses_Shirts_id_00002532_04_4_full.jpg 1 0.442667 0.653043 0.285333 0.406903
